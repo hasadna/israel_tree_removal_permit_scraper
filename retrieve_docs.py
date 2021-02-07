@@ -1,8 +1,11 @@
+import logging
 from pathlib import Path
 
 import requests
 
 from docs_name_parser import parse_urls
+
+logger = logging.getLogger(__name__)
 
 
 def load_urls():
@@ -14,13 +17,14 @@ def load_urls():
 def main(target: Path):
     urls = load_urls()
     for url in urls:
-        print(f"Getting {url.filename}...")
+        logger.info(f"Getting {url.filename}...")
         r = requests.get(url.url)
         r.raise_for_status()
-        with (target / url.filename).open("wb") as f:
+        with (folder / url.filename).open("wb") as f:
             f.write(r.content)
 
 
-target = Path(__file__).parent / "downloads"
-target.mkdir(exist_ok=True)
-main(target)
+if __name__ == "__main__":
+    target = Path(__file__).parent / "downloads"
+    target.mkdir(exist_ok=True)
+    retrieve_docs(target)
