@@ -4,6 +4,8 @@ Basic Python utilities to download and make some basic parsing/normalization to 
 
 URLs are collected from: <https://www.moag.gov.il/yhidotmisrad/forest_commissioner/rishyonot_krita/Pages/default.aspx>
 
+🌳🌲🌴 Inspired By [Meirim](https://meirim.org/)! 🌴🌲🌳 
+
 
 ## Requirements
 
