@@ -4,6 +4,7 @@ from pathlib import Path
 import requests
 
 from docs_name_parser import parse_urls
+from settings import DOWNLOAD_FOLDER
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,10 @@ def main(target: Path):
 
 
 if __name__ == "__main__":
-    target = Path(__file__).parent / "downloads"
-    target.mkdir(exist_ok=True)
-    retrieve_docs(target)
+    logging.basicConfig(
+        format="[%(levelname)s %(asctime)s %(module)s:%(lineno)d] %(message)s",
+        level=logging.INFO,
+    )
+    downloads = DOWNLOAD_FOLDER
+    downloads.mkdir(exist_ok=True)
+    retrieve_docs(downloads)

@@ -1,11 +1,15 @@
+import logging
 from collections import Counter
 from pathlib import Path
 
 import pandas as pd
 
 import doc_fields
+from settings import DOWNLOAD_FOLDER, CSV_EXPORTS_FOLDER
 
-optional = set(doc_fields.OPTIONAL_FIELDS)
+logger = logging.getLogger(__name__)
+
+OPTIONAL = set(doc_fields.OPTIONAL_FIELDS)
 
 
 class DocParserError(ValueError):
@@ -27,7 +31,7 @@ def parse_doc(file: Path, is_before: bool):
     missing = required - flds
     if missing:
         raise DocParserError(f"Missing fields: {', '.join(sorted(missing))}")
-    redundant = flds - required - optional
+    redundant = flds - required - OPTIONAL
     if redundant:
         raise DocParserError(f"Redundant fields: {', '.join(sorted(redundant))}")
     df = df.astype(doc_fields.DTYPES)
@@ -41,34 +45,49 @@ def parse_doc(file: Path, is_before: bool):
     return df
 
 
-downloads = Path(__file__).parent / "downloads"
-exports = Path(__file__).parent / "csv_exports"
-exports.mkdir(exist_ok=True)
+def save_doc(folder: Path, stem: str, df: pd.DataFrame):
+    p = folder / f"{stem}.csv"
+    df.to_csv(p, index=False)
+    logger.info(f"Saved {p.name}: {len(df)} lines.")
 
-dfs = []
-for p in downloads.glob("*"):
-    if p.suffix not in [".xls", ".xlsx"]:
-        print("! bad filename:", p.name)
-        continue
 
-    try:
-        df = parse_doc(p, "before" in p.name)
-    except DocParserError as e:
-        print("ERROR:", p.name, e)
-        continue
+def process_docs(downloads_folder: Path, csv_folder: Path):
+    dfs = []
+    for p in downloads_folder.glob("*"):
+        if p.suffix not in [".xls", ".xlsx"]:
+            logger.warning(f"Bad filename: {p.name}. skipping...")
+            continue
 
-    if df is None:
-        print("! bad file:", p.name)
-        continue
+        try:
+            df = parse_doc(p, "before" in p.name)
+        except DocParserError as e:
+            logger.error(f"Error parsing {p.name}: {e}")
+            continue
+        except Exception as e:
+            logger.exception(f"Unexpected Error parsing {p.name}: {e}")
+            raise
 
-    t = exports / f"{p.stem}.csv"
-    df.to_csv(t, index=False)
-    print(t.name)
-    df.reset_index(inplace=True, drop=True)
-    dfs.append(df)
+        if df is None:
+            logger.error(f"Bad file {p.name}.")
+            continue
 
-df = pd.concat(dfs, ignore_index=True, verify_integrity=False)
+        save_doc(csv_folder, p.stem, df)
+        df.reset_index(inplace=True, drop=True)
+        dfs.append(df)
 
-df.to_csv(exports / f"all.csv", index=False)
-df[df.appeal_by_date.notna()].to_csv(exports / f"open.csv", index=False)
-df[df.appeal_by_date.isna()].to_csv(exports / f"closed.csv", index=False)
+    df = pd.concat(dfs, ignore_index=True, verify_integrity=False)
+
+    save_doc(csv_folder, "all", df)
+    save_doc(csv_folder, "before", df[df.appeal_by_date.notna()])
+    save_doc(csv_folder, "after", df[df.appeal_by_date.isna()])
+
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        format="[%(levelname)s %(asctime)s %(module)s:%(lineno)d] %(message)s",
+        level=logging.INFO,
+    )
+    downloads = DOWNLOAD_FOLDER
+    exports = CSV_EXPORTS_FOLDER
+    exports.mkdir(exist_ok=True)
+    process_docs(downloads, exports)

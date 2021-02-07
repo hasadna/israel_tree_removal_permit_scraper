@@ -20,11 +20,10 @@ def fix_xlsx_files(folder: Path):
                 f"Fixing {p.name}: deleting empty rows #{','.join(str(x) for x in empty)}"
             )
             for idx in empty[::-1]:
-                print(idx)
                 ws.delete_rows(idx, 1)
             wb.save(p)
 
 
 if __name__ == "__main__":
-    target = Path(__file__).parent / "downloads"
-    fix_xlsx_files(target)
+    downloads = Path(__file__).parent / "downloads"
+    fix_xlsx_files(downloads)
