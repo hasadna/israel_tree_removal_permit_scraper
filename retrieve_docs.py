@@ -15,7 +15,7 @@ def load_urls():
     return sorted(parse_urls(raw_urls))
 
 
-def main(target: Path):
+def retrieve_docs(folder: Path):
     urls = load_urls()
     for url in urls:
         logger.info(f"Getting {url.filename}...")
