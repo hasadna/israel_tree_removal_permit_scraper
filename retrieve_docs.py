@@ -1,55 +1,26 @@
-import typing
 from pathlib import Path
-from pprint import pp
+
+import requests
+
+from docs_name_parser import parse_urls
 
 
-def parse_status(stem: str):
-    stem = stem.lower()
-    if "befor" in stem:
-        return "before"
-    if "after" in stem:
-        return "after"
-    if "aftar" in stem:
-        return "after"
-    assert False, f"Can't parse: {stem!r}"
+def load_urls():
+    with open("doc_urls.txt") as f:
+        raw_urls = f.read().splitlines()
+    return sorted(parse_urls(raw_urls))
 
 
-def parse_region(stem: str):
-    stem = stem.lower()
-    for s in [
-        "trees",
-        "tree",
-        "before",
-        "befor",
-        "after",
-        "aftar",
-    ]:
-        stem = stem.replace(s, "")
-    stem = stem.strip("_").replace("_", "-")
-    return stem or "general"
-
-
-class DocUrl(typing.NamedTuple):
-    region: str
-    status: str
-    extension: str
-    url: str
-
-
-def parse_urls(urls):
+def main(target: Path):
+    urls = load_urls()
     for url in urls:
-        p = Path(url)
-        yield DocUrl(
-            parse_region(p.stem),
-            parse_status(p.stem),
-            p.suffix.lower(),
-            url,
-        )
+        print(f"Getting {url.filename}...")
+        r = requests.get(url.url)
+        r.raise_for_status()
+        with (target / url.filename).open("wb") as f:
+            f.write(r.content)
 
 
-with open("doc_urls.txt") as f:
-    raw_urls = f.read().splitlines()
-
-urls = sorted(parse_urls(raw_urls))
-
-pp(urls)
+target = Path(__file__).parent / "downloads"
+target.mkdir(exist_ok=True)
+main(target)
