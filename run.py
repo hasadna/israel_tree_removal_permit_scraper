@@ -2,7 +2,6 @@ import logging
 from pathlib import Path
 
 from doc_parser import process_docs
-from fix_xlsx import fix_xlsx_files
 from retrieve_docs import retrieve_docs
 from settings import DOWNLOAD_FOLDER, CSV_EXPORTS_FOLDER
 
@@ -16,7 +15,6 @@ def download_and_process_docs(downloads: Path, exports: Path):
     exports.mkdir(exist_ok=True)
 
     retrieve_docs(downloads)
-    fix_xlsx_files(downloads)
     process_docs(downloads, exports)
     logger.info("Done!")
 

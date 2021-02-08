@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 import doc_fields
+from fix_xlsx import fix_excel_file
 from settings import DOWNLOAD_FOLDER, CSV_EXPORTS_FOLDER
 
 logger = logging.getLogger(__name__)
@@ -17,6 +18,8 @@ class DocParserError(ValueError):
 
 
 def parse_doc(file: Path, is_before: bool):
+    if file.suffix == ".xlsx":
+        fixed, file = fix_excel_file(file)
     df: pd.DataFrame = pd.read_excel(file)
     if len(df.columns) > 25:
         return None
