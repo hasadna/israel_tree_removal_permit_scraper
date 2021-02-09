@@ -13,6 +13,10 @@ logger = logging.getLogger(__name__)
 OPTIONAL = set(doc_fields.OPTIONAL_FIELDS)
 
 
+def normalize_whitespace(s: pd.Series):
+    return s.str.strip().str.replace("\n", "; ").str.replace(r"\s+", " ", regex=True)
+
+
 class DocParserError(ValueError):
     pass
 
@@ -45,6 +49,11 @@ def parse_doc(file: Path, is_before: bool):
         cols[a2] = "tree_action"
         df.columns = cols
     assert all(v == 1 for v in Counter(df.columns).values())
+
+    # Apply some quick fixes to data
+
+    df.update(df.select_dtypes(["object"]).apply(normalize_whitespace))
+
     return df
 
 
