@@ -83,11 +83,13 @@ def process_docs(downloads_folder: Path, csv_folder: Path):
             logger.error(f"Bad file {p.name}.")
             continue
 
+        df = df.sort_values(["region", "permit_number", "species"])
         save_doc(csv_folder, p.stem, df)
         df.reset_index(inplace=True, drop=True)
         dfs.append(df)
 
     df = pd.concat(dfs, ignore_index=True, verify_integrity=False)
+    df = df.sort_values(["region", "permit_number", "species"])
 
     save_doc(csv_folder, "all", df)
     save_doc(csv_folder, "before", df[df.appeal_by_date.notna()])
