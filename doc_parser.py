@@ -6,7 +6,8 @@ import pandas as pd
 
 import doc_fields
 from fix_xlsx import fix_excel_file
-from settings import DOWNLOAD_FOLDER, CSV_EXPORTS_FOLDER
+from settings import DOWNLOAD_FOLDER, CSV_EXPORTS_FOLDER, TEXT_EXPORTS_FOLDER
+from text_exporter import export_texts
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,23 @@ def save_doc(folder: Path, stem: str, df: pd.DataFrame):
     logger.info(f"Saved {p.name}: {len(df)} lines.")
 
 
-def process_docs(downloads_folder: Path, csv_folder: Path):
+def save_texts(folder: Path, stem: str, df: pd.DataFrame):
+    p = folder / f"{stem}.txt"
+    with p.open("w") as f:
+        f.write("\n\n".join(export_texts(df)))
+    logger.info(f"Exported {p.name}")
+
+
+def save(csv_folder, texts_folder, df, stem):
+    save_doc(csv_folder, stem, df)
+    save_texts(texts_folder, stem, df)
+
+
+def process_docs(
+    downloads_folder: Path,
+    csv_folder: Path,
+    texts_folder: Path,
+):
     dfs = []
     for p in downloads_folder.glob("*"):
         if p.suffix not in [".xls", ".xlsx"]:
@@ -84,16 +101,21 @@ def process_docs(downloads_folder: Path, csv_folder: Path):
             continue
 
         df = df.sort_values(["region", "permit_number", "species"])
-        save_doc(csv_folder, p.stem, df)
+        save(csv_folder, texts_folder, df, p.stem)
         df.reset_index(inplace=True, drop=True)
         dfs.append(df)
 
     df = pd.concat(dfs, ignore_index=True, verify_integrity=False)
     df = df.sort_values(["region", "permit_number", "species"])
 
-    save_doc(csv_folder, "all", df)
-    save_doc(csv_folder, "before", df[df.appeal_by_date.notna()])
-    save_doc(csv_folder, "after", df[df.appeal_by_date.isna()])
+    items = [
+        ("all", df),
+        ("before", df[df.appeal_by_date.notna()]),
+        ("after", df[df.appeal_by_date.isna()]),
+    ]
+
+    for name, dff in items:
+        save(csv_folder, texts_folder, dff, name)
 
 
 if __name__ == "__main__":
@@ -103,5 +125,8 @@ if __name__ == "__main__":
     )
     downloads = DOWNLOAD_FOLDER
     exports = CSV_EXPORTS_FOLDER
+    texts = TEXT_EXPORTS_FOLDER
     exports.mkdir(exist_ok=True)
-    process_docs(downloads, exports)
+    texts.mkdir(exist_ok=True)
+
+    process_docs(downloads, exports, texts)
