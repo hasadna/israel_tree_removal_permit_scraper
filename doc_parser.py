@@ -25,7 +25,7 @@ class DocParserError(ValueError):
 def parse_doc(file: Path, is_before: bool):
     if file.suffix == ".xlsx":
         fixed, file = fix_excel_file(file)
-    df: pd.DataFrame = pd.read_excel(file)
+    df: pd.DataFrame = pd.read_excel(file, dtype=doc_fields.DTYPES)
     if len(df.columns) > 25:
         return None
     required = set(
@@ -42,7 +42,6 @@ def parse_doc(file: Path, is_before: bool):
     redundant = flds - required - OPTIONAL
     if redundant:
         raise DocParserError(f"Redundant fields: {', '.join(sorted(redundant))}")
-    df = df.astype(doc_fields.DTYPES)
     cols = list(df.columns)
     if cols.count("action") == 2:
         a1 = cols.index("action")

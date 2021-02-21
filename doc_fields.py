@@ -76,12 +76,16 @@ OPTIONAL_FIELDS = [
 
 BEFORE_FIELDS = REQUIRED_BEFORE_FIELDS + OPTIONAL_FIELDS
 
-DTYPES = {
-    # "block": str,
-    # "parcel": str,
-    # "street_number": str,
-    "number_of_trees": "Int64",
+STR_FIELDS = {
+    "block",
+    "parcel",
+    "street",
+    "street_number",
+    "number_of_trees",
+    "notes",
 }
+
+DTYPES = {k: str for k, v in FIELDS.items() if v in STR_FIELDS}
 
 
 def normalize_fld(s):

@@ -18,10 +18,13 @@ TEXT_FIELDS = [
     ("סיום תוקף", "to_date"),
     ("המאשר", "approved_by"),
     ("תפקיד הגורם המאשר", "approver_role"),
-    #  ('משפחה', 'family'),
-    #  ('מין או סוג', 'species'),
-    #  ('מספר העצים', 'number_of_trees'),
-    #  ('הערות', 'notes')
+]
+
+DETAIL_FIELDS = [
+    "family",
+    "species",
+    "number_of_trees",
+    "notes",
 ]
 
 
@@ -36,11 +39,16 @@ def group_to_text(group: pd.DataFrame):
             if isinstance(v, pd.Timestamp):
                 v = v.date()
             lines.append(f"- {title}: {v}")
-    lines.append(f"- פירוט:")
-    for i, row in group.iterrows():
-        fam = f" ({row.family})" if "family" in row and pd.notna(row.family) else ""
-        notes = f" ({row.notes})" if pd.notna(row.notes) else ""
-        lines.append(f"  * {row.species}{fam}: {row.number_of_trees}{notes}")
+
+    fields = [f for f in DETAIL_FIELDS if f in group.columns]
+    group = group[fields].dropna(how="all")
+    if len(group):
+        lines.append(f"- פירוט:")
+        for i, row in group.iterrows():
+            fam = f" ({row.family})" if "family" in row and pd.notna(row.family) else ""
+            notes = f" ({row.notes})" if pd.notna(row.notes) else ""
+            lines.append(f"  * {row.species}{fam}: {row.number_of_trees or '?'}{notes}")
+
     return lines
 
 
