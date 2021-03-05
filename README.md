@@ -19,13 +19,20 @@ URLs are collected from: <https://www.moag.gov.il/yhidotmisrad/forest_commission
 
    * Using https:
         
-         git clone --recurse-submodules https://github.com/hasadna/israel_tree_removal_permit_scraper
+         git clone https://github.com/hasadna/israel_tree_removal_permit_scraper
          cd israel_tree_removal_permit_scraper
+         git clone https://github.com/hasadna/israel_tree_removal_permits_raw.git downloads
+         git clone https://github.com/hasadna/israel_tree_removal_permits_csv.git csv_exports
+         git clone https://github.com/hasadna/israel_tree_removal_permits_text.git text_exports
+
       
    * Using ssh:
       
-         git clone --recurse-submodules git@github.com:hasadna/israel_tree_removal_permit_scraper.git
+         git clone git@github.com:hasadna/israel_tree_removal_permit_scraper.git
          cd israel_tree_removal_permit_scraper
+         git clone git@github.com:hasadna/israel_tree_removal_permits_raw.git downloads
+         git clone git@github.com:hasadna/israel_tree_removal_permits_csv.git csv_exports
+         git clone git@github.com:hasadna/israel_tree_removal_permits_text.git text_exports
   
 2. Install python requirements:
    
