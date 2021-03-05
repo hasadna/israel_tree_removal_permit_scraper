@@ -1,9 +1,0 @@
-[submodule "downloads"]
-	path = downloads
-	url = https://github.com/hasadna/israel_tree_removal_permits_raw.git
-[submodule "csv_exports"]
-	path = csv_exports
-	url = https://github.com/hasadna/israel_tree_removal_permits_csv.git
-[submodule "text_exports"]
-	path = text_exports
-	url = https://github.com/hasadna/israel_tree_removal_permits_text.git
